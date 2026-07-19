@@ -580,6 +580,7 @@ def run_conversation(
         from hermes_cli.plugins import invoke_hook as _invoke_hook
         _pre_results = _invoke_hook(
             "pre_llm_call",
+            task_id=effective_task_id,
             session_id=agent.session_id,
             user_message=original_user_message,
             conversation_history=list(messages),
@@ -4216,6 +4217,7 @@ def run_conversation(
             from hermes_cli.plugins import invoke_hook as _invoke_hook
             _invoke_hook(
                 "post_llm_call",
+                task_id=effective_task_id,
                 session_id=agent.session_id,
                 user_message=original_user_message,
                 assistant_response=final_response,
@@ -4334,11 +4336,15 @@ def run_conversation(
         from hermes_cli.plugins import invoke_hook as _invoke_hook
         _invoke_hook(
             "on_session_end",
+            task_id=effective_task_id,
             session_id=agent.session_id,
             completed=completed,
             interrupted=interrupted,
+            failed=failed,
             model=agent.model,
             platform=getattr(agent, "platform", None) or "",
+            final_response_chars=len(final_response or ""),
+            api_call_count=api_call_count,
         )
     except Exception as exc:
         logger.warning("on_session_end hook failed: %s", exc)

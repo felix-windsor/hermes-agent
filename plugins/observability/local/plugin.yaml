@@ -1,0 +1,12 @@
+name: local-observability
+version: "0.1.0"
+description: "Local Hermes observability events for traces, tools, skills, and task outcomes. Writes JSONL and SQLite under HERMES_HOME."
+author: NousResearch
+hooks:
+  - pre_api_request
+  - post_api_request
+  - pre_tool_call
+  - post_tool_call
+  - post_llm_call
+  - on_session_end
+  - skill_used

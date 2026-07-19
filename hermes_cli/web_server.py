@@ -4165,15 +4165,45 @@ def _discover_dashboard_plugins() -> list:
     if env_var_enabled("HERMES_ENABLE_PROJECT_PLUGINS"):
         search_dirs.append((Path.cwd() / ".hermes" / "plugins", "project"))
 
+    def _iter_dashboard_plugin_dirs(plugins_root: Path):
+        """Yield plugin directories that contain dashboard/manifest.json.
+
+        Bundled plugins may live one level deep under a category directory
+        (for example ``observability/local``).  The dashboard scanner used
+        to only inspect direct children, so nested agent plugins could ship
+        hooks but not a dashboard tab.  Keep the search deliberately shallow
+        (direct child + grandchild) to avoid walking arbitrary user trees.
+        """
+        try:
+            children = sorted(plugins_root.iterdir())
+        except OSError as exc:
+            _log.warning("Could not scan dashboard plugin directory %s: %s", plugins_root, exc)
+            return
+        for child in children:
+            if not child.is_dir():
+                continue
+            try:
+                if (child / "dashboard" / "manifest.json").exists():
+                    yield child
+                    continue
+                grandchildren = sorted(child.iterdir())
+            except OSError as exc:
+                _log.warning("Could not scan dashboard plugin candidate %s: %s", child, exc)
+                continue
+            for grandchild in grandchildren:
+                try:
+                    has_manifest = grandchild.is_dir() and (grandchild / "dashboard" / "manifest.json").exists()
+                except OSError as exc:
+                    _log.warning("Could not scan dashboard plugin candidate %s: %s", grandchild, exc)
+                    continue
+                if has_manifest:
+                    yield grandchild
+
     for plugins_root, source in search_dirs:
         if not plugins_root.is_dir():
             continue
-        for child in sorted(plugins_root.iterdir()):
-            if not child.is_dir():
-                continue
+        for child in _iter_dashboard_plugin_dirs(plugins_root):
             manifest_file = child / "dashboard" / "manifest.json"
-            if not manifest_file.exists():
-                continue
             try:
                 data = json.loads(manifest_file.read_text(encoding="utf-8"))
                 name = data.get("name", child.name)

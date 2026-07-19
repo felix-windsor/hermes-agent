@@ -1,0 +1,201 @@
+.hermes-observe {
+  color: var(--color-text, #e8eef2);
+  padding: 20px;
+}
+
+.hermes-observe-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1380px;
+}
+
+.hermes-observe-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  padding-bottom: 14px;
+}
+
+.hermes-observe-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hermes-observe-title h1 {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.hermes-observe-title p {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 13px;
+  margin: 0;
+}
+
+.hermes-observe-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.hermes-observe-button {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.5);
+  color: inherit;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hermes-observe-button:hover {
+  border-color: rgba(125, 211, 252, 0.65);
+}
+
+.hermes-observe-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.hermes-observe-kpi,
+.hermes-observe-panel {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.32);
+}
+
+.hermes-observe-kpi {
+  padding: 12px;
+  min-height: 86px;
+}
+
+.hermes-observe-kpi span {
+  color: rgba(226, 232, 240, 0.62);
+  display: block;
+  font-size: 11px;
+}
+
+.hermes-observe-kpi strong {
+  display: block;
+  font-size: 26px;
+  line-height: 1.2;
+  margin-top: 8px;
+}
+
+.hermes-observe-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.hermes-observe-panel {
+  min-width: 0;
+  padding: 14px;
+}
+
+.hermes-observe-panel h2 {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+  margin: 0 0 12px;
+}
+
+.hermes-observe-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.hermes-observe-bar-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 160px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.hermes-observe-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hermes-observe-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  overflow: hidden;
+}
+
+.hermes-observe-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #a7f3d0);
+}
+
+.hermes-observe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.hermes-observe-table th,
+.hermes-observe-table td {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  padding: 8px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.hermes-observe-table th {
+  color: rgba(226, 232, 240, 0.62);
+  font-weight: 600;
+}
+
+.hermes-observe-muted {
+  color: rgba(226, 232, 240, 0.58);
+}
+
+.hermes-observe-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.hermes-observe-status-error {
+  color: #fda4af;
+}
+
+.hermes-observe-status-success {
+  color: #86efac;
+}
+
+.hermes-observe-empty {
+  color: rgba(226, 232, 240, 0.58);
+  font-size: 13px;
+  padding: 14px 0;
+}
+
+@media (max-width: 980px) {
+  .hermes-observe {
+    padding: 14px;
+  }
+  .hermes-observe-header {
+    flex-direction: column;
+  }
+  .hermes-observe-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hermes-observe-grid {
+    grid-template-columns: 1fr;
+  }
+  .hermes-observe-bar-row {
+    grid-template-columns: minmax(70px, 120px) 1fr auto;
+  }
+}

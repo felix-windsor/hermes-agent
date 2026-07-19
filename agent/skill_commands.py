@@ -458,6 +458,18 @@ def build_skill_invocation_message(
     except Exception:
         pass  # Non-critical — skill invocation proceeds regardless
 
+    try:
+        from hermes_cli.plugins import invoke_hook
+        invoke_hook(
+            "skill_used",
+            skill_name=skill_name,
+            source="slash_command",
+            task_id=task_id or "",
+            session_id=task_id or "",
+        )
+    except Exception:
+        pass
+
     activation_note = (
         f'[IMPORTANT: The user has invoked the "{skill_name}" skill, indicating they want '
         "you to follow its instructions. The full skill content is loaded below.]"
@@ -504,6 +516,18 @@ def build_preloaded_skills_prompt(
             bump_use(skill_name)
         except Exception:
             pass  # Non-critical
+
+        try:
+            from hermes_cli.plugins import invoke_hook
+            invoke_hook(
+                "skill_used",
+                skill_name=skill_name,
+                source="preload",
+                task_id=task_id or "",
+                session_id=task_id or "",
+            )
+        except Exception:
+            pass
 
         activation_note = (
             f'[IMPORTANT: The user launched this CLI session with the "{skill_name}" skill '

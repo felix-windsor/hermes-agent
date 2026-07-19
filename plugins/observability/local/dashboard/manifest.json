@@ -1,0 +1,14 @@
+{
+  "name": "local-observability",
+  "label": "观测看板",
+  "description": "本地 Hermes trace、工具、Skill 与任务结果分析。",
+  "icon": "Activity",
+  "version": "0.1.0",
+  "tab": {
+    "path": "/observability",
+    "position": "after:analytics"
+  },
+  "entry": "dist/index.js",
+  "css": "dist/style.css",
+  "api": "plugin_api.py"
+}
