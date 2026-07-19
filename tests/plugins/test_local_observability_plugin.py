@@ -270,3 +270,75 @@ class TestDashboardApi:
         assert any(row["name"] == "terminal" for row in overview["tools"])
         assert overview["skills"][0]["name"] == "writer"
         assert overview["failures"][0]["name"] == "web_search"
+        assert overview["failures"][0]["failure_category"]["label"] == "工具执行错误"
+        assert overview["failure_categories"][0]["count"] == 1
+
+    def test_dashboard_overview_filters_by_range(self, tmp_path, monkeypatch):
+        api = self._fresh_dashboard_api(monkeypatch, tmp_path)
+        store = importlib.import_module("plugins.observability.local.store")
+
+        old = store.record_event(event_type="tool.completed", task_id="old", name="old_tool")
+        store.record_event(event_type="tool.completed", task_id="new", name="new_tool")
+
+        conn = sqlite3.connect(store.sqlite_path())
+        try:
+            conn.execute(
+                "UPDATE events SET created_at = ? WHERE event_id = ?",
+                ("2000-01-01T00:00:00+00:00", old["event_id"]),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        recent = api.build_overview(range_name="1h")
+        all_time = api.build_overview(range_name="all")
+
+        assert recent["totals"]["events"] == 1
+        assert recent["tools"][0]["name"] == "new_tool"
+        assert all_time["totals"]["events"] == 2
+
+    def test_dashboard_trace_detail_orders_events_and_summarizes(self, tmp_path, monkeypatch):
+        api = self._fresh_dashboard_api(monkeypatch, tmp_path)
+        store = importlib.import_module("plugins.observability.local.store")
+
+        first = store.record_event(event_type="llm.requested", task_id="trace-task", name="model")
+        second = store.record_event(
+            event_type="tool.completed",
+            task_id="trace-task",
+            name="terminal",
+            status="error",
+            duration_ms=25,
+            payload={"error": "Permission denied"},
+        )
+        third = store.record_event(event_type="task.failed", task_id="trace-task", name="agent_task")
+
+        conn = sqlite3.connect(store.sqlite_path())
+        try:
+            updates = [
+                ("2026-01-01T00:00:00+00:00", first["event_id"]),
+                ("2026-01-01T00:00:01+00:00", second["event_id"]),
+                ("2026-01-01T00:00:02+00:00", third["event_id"]),
+            ]
+            conn.executemany("UPDATE events SET created_at = ? WHERE event_id = ?", updates)
+            conn.commit()
+        finally:
+            conn.close()
+
+        detail = api.build_trace_detail(store.trace_id_for("trace-task"))
+
+        assert [event["event_type"] for event in detail["events"]] == [
+            "llm.requested",
+            "tool.completed",
+            "task.failed",
+        ]
+        assert detail["summary"]["events"] == 3
+        assert detail["summary"]["tools"] == 1
+        assert detail["summary"]["errors"] == 2
+        assert detail["failures"][0]["failure_category"]["label"] == "权限问题"
+
+    def test_dashboard_failure_classifier_labels_common_errors(self, tmp_path, monkeypatch):
+        api = self._fresh_dashboard_api(monkeypatch, tmp_path)
+
+        assert api.classify_failure({"payload": {"error": "Unauthorized API key"}})["label"] == "认证/API Key 问题"
+        assert api.classify_failure({"payload": {"error": "request timed out"}})["label"] == "超时"
+        assert api.classify_failure({"payload": {"error": "No such file or directory"}})["label"] == "资源不存在"

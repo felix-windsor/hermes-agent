@@ -492,23 +492,26 @@ def format_traces(limit: int = 12) -> str:
         conn.close()
 
 
-def export_events(limit: int = 1000) -> Path:
+def export_events(limit: int = 1000, started_after: Optional[str] = None) -> Path:
     limit = _clamp_limit(limit)
     conn = _connect_readonly()
     if conn is None:
         raise FileNotFoundError("No local observability events yet.")
     try:
+        where_sql = "WHERE created_at >= ?" if started_after else ""
+        params: tuple[Any, ...] = (started_after, limit) if started_after else (limit,)
         rows = _rows(
             conn,
-            """
+            f"""
             SELECT event_id, created_at, trace_id, task_id, session_id,
                    event_type, span_type, name, status, duration_ms,
                    model, provider, payload_json
             FROM events
+            {where_sql}
             ORDER BY created_at DESC
             LIMIT ?
             """,
-            (limit,),
+            params,
         )
         events = []
         for row in reversed(rows):
